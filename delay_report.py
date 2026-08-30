@@ -112,14 +112,24 @@ def print_list(list):
         print(f'{index} - {value}')
 
 
-def desinations_info(data):    
-    all_arr = dict(Counter(data['ARR']).most_common())
-    # cg_delays_arr = dict(Counter(get_delays_by_reason(data, CG_DELAY_REASONS)['ARR']).most_common())
-    cg_delays_arr = dict(Counter(filter(data, is_cg_delay)['ARR']).most_common())
+def desinations_info(df):    
+    all_arr = dict(Counter(df['ARR']).most_common())
+    cg_delays_arr = dict(Counter(filter(df, is_cg_delay)['ARR']).most_common())
     ratios = {}
     for key, value in cg_delays_arr.items():
         ratios[key] = round(value / all_arr[key] * 100, 2)
     ratios = sorted(ratios.items(), key=lambda item: item[1])
+    print(cg_delays_arr)
+    print_list(ratios)
+
+def gate_info(df):
+    gates = dict(Counter(df['DEP GATE']).most_common())
+    cg_gates = dict(Counter(filter(df, is_cg_delay)['DEP GATE']).most_common())
+    ratios = {}
+    for key, value in cg_gates.items():
+        ratios[key] = round(value / gates[key] * 100, 2)
+    ratios = sorted(ratios.items(), key=lambda item: item[1])
+    print(cg_gates)
     print_list(ratios)
 
 #-------------------- main -------------------------------#
