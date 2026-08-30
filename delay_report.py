@@ -24,12 +24,13 @@ def get_data(folder):
 def filter(df, filter):
     return df[df.apply(filter, axis=1)]
 
-def is_delay(f):
-    return f['REASON'].split() == '--'
+def is_delay(f, criteria=None):
+    if (criteria is None):
+        return f['REASON'].split() != '--'
+    return f['REASON'].split()[0] in criteria
 
 def is_cg_delay(f):
-    return f['REASON'].split()[0] == ('Baggage' or 'Resource')
-    # return f['REASON'].split()[0] == 'Baggage' or f['REASON'].split()[0] == 'Resource'
+    return is_delay(f, CG_DELAY_REASONS)
 
 def is_special(f, special):
     icon = f.at['SPECIALS']
@@ -43,40 +44,10 @@ def is_priority(f):
     return is_special(f, 'P')
 
 def is_quick_turn(f):
-    return is_quick_turn(f, 'Q')
-
-def delay_test():
-    data = get_data('/data/SFO-Aug/')
-    # delays = data[data['REASON'] != '--']
-    # stars = filter(data, is_star)
-    # print(is_cg_delay(data.iloc[4]))
-    cg_delays = filter(data, is_cg_delay)
-    # cg = data[data['REASON'] == 'Baggage']
-    print(len(cg_delays))
-    print(len(data))
-
-delay_test()
+    return is_special(f, 'Q')
 
 def get_delays(df):
     return df[df['REASON'] != '--']
-
-# Returns new dataframe with only delayed flights
-# def get_delays(df):
-#     delays = []
-#     delay_lengths = df['DELAY DEP']
-#     for i in range(len(delay_lengths)):
-#         if (delay_lengths[i][0] != '-' and delay_lengths[i] != '00:00'):
-#             delays.append(i)
-#     return df.iloc[df.index.isin(delays)]
-
-def get_delays_by_reason(df, criteria):
-    reasons = df['REASON']
-    delays = []
-    for index, value in reasons.items():
-        first_reason = value.split()[0]
-        if (first_reason in criteria):
-            delays.append(index)
-    return df.iloc[df.index.isin(delays)]
 
 # Calculates frequency of each delay type for all station delays 
 def get_station_reasons(df):
@@ -97,14 +68,14 @@ def filter_by_zone(df, zone):
 def export(df, name):
     df.to_excel(name + '.xlsx')
 
-def get_gates(data):
-    gates = data['DEP GATE']
+def get_gates(df):
+    gates = df['DEP GATE']
     gate_freq = Counter(gates)
     gate_freq = gate_freq.most_common(10)
     return gate_freq
 
-def get_aircrafts(data):
-    aircrafts = data['AIRCRAFT']
+def get_aircrafts(df):
+    aircrafts = df['AIRCRAFT']
     aircrafts = Counter(aircrafts)
     return aircrafts
 
@@ -129,9 +100,6 @@ def info(df):
         'quick turns': len(filter(df, is_quick_turn))
     }
 
-def cg_delays_info(df):
-    return info(get_delays_by_reason(df, CG_DELAY_REASONS))
-
 # Returns list of worst performing routes in dataframe
 def route_test(df):
     flights = []
@@ -146,7 +114,8 @@ def print_list(list):
 
 def desinations_info(data):    
     all_arr = dict(Counter(data['ARR']).most_common())
-    cg_delays_arr = dict(Counter(get_delays_by_reason(data, CG_DELAY_REASONS)['ARR']).most_common())
+    # cg_delays_arr = dict(Counter(get_delays_by_reason(data, CG_DELAY_REASONS)['ARR']).most_common())
+    cg_delays_arr = dict(Counter(filter(data, is_cg_delay)['ARR']).most_common())
     ratios = {}
     for key, value in cg_delays_arr.items():
         ratios[key] = round(value / all_arr[key] * 100, 2)
@@ -155,6 +124,10 @@ def desinations_info(data):
 
 #-------------------- main -------------------------------#
 
-# if __name__ == '__main__':
-#     data = get_data('/data/SFO-Aug/')
-#     plot_station_reasons(data)
+if __name__ == '__main__':
+    data = get_data('/data/SFO-Aug/')
+    # cg_delays = filter(data, is_cg_delay)
+    # cg_info = info(cg_delays)
+    print(info(data))
+    print(desinations_info(data))
+    # plot_station_reasons(data)
