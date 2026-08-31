@@ -10,7 +10,12 @@ figure(figsize=(35, 5), dpi=80)
 # CG_DELAY_REASONS = ['Baggage', 'Resource'] cargo? 
 CG_DELAY_REASONS = ['Baggage', 'Resource', 'Equipment']
 HUBS = ['LAX', 'IAD', 'ORD', 'EWR', 'IAH', 'DEN']
+WIDE_BODY = ['777', '77W', '788', '789', '763', '764']
+NARROW_BODY = ['319', '320', '321', '737', '738', '7M8', '739', '7M9','752', '753', ]
+EXPRESS = ['CR7', 'CRJ', 'E7W', 'ERJ', 'CR5']
+INTL = ['AKL', 'AMS', 'BCN', 'CHC', 'CDG', 'CUN', 'FCO', 'FRA', 'HKG', 'HND', 'ICN', 'KIX', 'LHR', 'MEL', 'MEX', 'MNL', 'MTY', 'MUC', 'NRT', 'PEK', 'PPT', 'PVG', 'PVR', 'SIN', 'SJD', 'SJO', 'SYD', 'TPE', 'YUL', 'YVR', 'YYC', 'YYZ', 'ZRH']
 
+#---------------- Methods -----------------------#
 def get_data(folder):
     path = os.getcwd() + folder
     files = os.listdir(path)
@@ -59,9 +64,6 @@ def get_station_reasons(df):
             station_reasons.append(first_reason)
     return Counter(station_reasons).most_common(12)
 
-def get_delays_by_hour(df):
-    return     
-
 def filter_by_zone(df, zone):
     return df[df['DEP ZONE'] == zone]
 
@@ -79,6 +81,11 @@ def get_aircrafts(df):
     aircrafts = Counter(aircrafts)
     return aircrafts
 
+'''delays per scheduled hour'''
+def get_delays_by_hour(df):
+
+    return     
+
 #---------------- plots -----------------------#
 
 def bar_plot(df):
@@ -89,7 +96,7 @@ def bar_plot(df):
 def plot_station_reasons(df):
     bar_plot(get_station_reasons(df)) 
 
-#---------------- tests -----------------------------$
+#---------------- info -----------------------------$
 
 def info(df):
     return {
@@ -111,11 +118,13 @@ def print_list(list):
     for index, value in list:
         print(f'{index} - {value}')
 
-
-def desinations_info(data):    
-    all_arr = dict(Counter(data['ARR']).most_common())
-    # cg_delays_arr = dict(Counter(get_delays_by_reason(data, CG_DELAY_REASONS)['ARR']).most_common())
-    cg_delays_arr = dict(Counter(filter(data, is_cg_delay)['ARR']).most_common())
+"""calculate, format and print specials performance"""
+def specials_performance():
+    return
+    
+def desinations_info(df):    
+    all_arr = dict(Counter(df['ARR']).most_common())
+    cg_delays_arr = dict(Counter(filter(df, is_cg_delay)['ARR']).most_common())
     ratios = {}
     for key, value in cg_delays_arr.items():
         ratios[key] = round(value / all_arr[key] * 100, 2)
